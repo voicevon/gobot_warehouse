@@ -16,7 +16,7 @@ class Controller():
 		GPIO.setup(self.__y_dir_pin, GPIO.OUT)
 		GPIO.setup(self.__y_step_pin, GPIO.OUT)
 
-   	def move_stone(self, relative_x, relative_y):
+	def move_stone(self, relative_x, relative_y):
 		x_dir = GPIO.HIGH
 		if relative_x < 0:
 			x_dir = GPIO.LOW
