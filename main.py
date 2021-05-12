@@ -46,7 +46,7 @@ class CvWindows():
 class WarehouseRobot():
 
     def __init__(self):
-        pass
+        self.__camera = PiCamera()
         # self.__mark_scanner = MarkScanner()
         # self.__board_scanner = BoardScanner()
         # self.__layout_scanner = LayoutScanner()
@@ -66,22 +66,26 @@ class WarehouseRobot():
 
     def take_picture(self):
         # initialize the camera and grab a reference to the raw camera capture
-        camera = PiCamera()
-        rawCapture = PiRGBArray(camera)
+        # camera = PiCamera()
+        # camera.stop_preview()
+        #rawCapture = PiRGBArray(camera,size=(640,480))
+        rawCapture = PiRGBArray(self.__camera)
+        # camera.stop_preview()
         # allow the camera to warmup
-        time.sleep(0.1)
+        time.sleep(1)
         # grab an image from the camera
-        camera.capture(rawCapture, format="bgr")
+        self.__camera.capture(rawCapture, format="bgr")
         image = rawCapture.array
+        #camera.close()
         # display the image on screen and wait for a keypress
         return image
 
-    def move_stone(self, relative_x, relative_y):
+    def move_stone(sedfsdffsfdsgf, relative_x, relative_y):
         x_dir = HIGH
         if relative_x < 0:
             x_dir = LOW
             relative_x = - relative_x
-        set_gpio((x_dir_pin, x_dir)
+        set_gpio(x_dir_pin, x_dir)
 
         y_dir = HIGH
         if relative_y < 0:
@@ -109,23 +113,23 @@ class WarehouseRobot():
         img = self.take_picture()
         g_mqtt.publish_cv_image('gobot_stonehouse/eye/origin', img)
 
-        time.sleep(5)
+        #time.sleep(2)
         
         # Get corners position from detecting aruco marks
-        aruco_mark = cv2.detect_aruco(img)
+        # aruco_mark = cv2.detect_aruco(img)
 
         # Get perspective views the plane
-        perspective_img = cv2.get_perspective_image(img, aruco_mark)
+        #perspective_img = cv2.get_perspective_image(img, aruco_mark)
         
         # Get the stone position, will store the position to where? 
-        x, y = get_stone_pistion(perspective_img, BLACK) 
+        #x, y = get_stone_pistion(perspective_img, BLACK) 
 
         # How far is the stone to the target position?
-        dx = self.__target_x_position - x_dir
-        dy = self.__target_y_position - y_dir 
+        #dx = self.__target_x_position - x_dir
+        #dy = self.__target_y_position - y_dir 
 
         # Control the plane motor to drive the stone move
-        self.move_stone(dx, dy)
+        #self.move_stone(dx, dy)
         
         
 
@@ -138,4 +142,6 @@ if __name__ == '__main__':
 
     myrobot = WarehouseRobot()
     while True:
-        myrotot.spin_once()
+        myrobot.spin_once()
+        time.sleep(1)
+        print('spin_once done...')
