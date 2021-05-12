@@ -7,6 +7,7 @@ class Controller():
 	def __init__(self):
 		GPIO.setmode(GPIO.BCM)
 		GPIO.cleanup()
+		GPIO.setwarnings(False)
 		self.__x_dir_pin = 22
 		self.__x_step_pin =22
 		self.__y_dir_pin = 22
