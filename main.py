@@ -108,10 +108,10 @@ class WarehouseRobot():
 
         # Get corners position from detecting aruco marks
         # aruco_mark = cv2.detect_aruco(img)
-        arucoDict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_4X4_50)
+        arucoDict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_4X4_1000)
         arucoParams = cv2.aruco.DetectorParameters_create()
         (corners, ids, rejected) = cv2.aruco.detectMarkers(img, arucoDict, parameters=arucoParams)
-        
+        print(corners, ids, rejected)        
         # Get perspective views the plane
         #perspective_img = cv2.get_perspective_image(img, aruco_mark)
         
