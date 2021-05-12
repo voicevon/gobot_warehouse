@@ -37,12 +37,12 @@ class Controller():
 				relative_x -= 1
 
 			if relative_y > 0:
-				GPIO.output(self.y_step_pin, y_dir)
+				GPIO.output(self.__y_step_pin, y_dir)
 				relative_y -= 1
 
 			time.sleep(0.2)
-			GPIO.output(self.x_step_pin, y_dir)
-			GPIO.output(self.y_step_pin, y_dir)
+			GPIO.output:(self.__x_step_pin, y_dir)
+			GPIO.output(self.__y_step_pin, y_dir)
 			time.sleep(0.2)
 		
 
