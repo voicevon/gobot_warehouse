@@ -185,27 +185,31 @@ class WarehouseRobot():
                 bottomRight = (int(bottomRight[0]), int(bottomRight[1]))
                 bottomLeft = (int(bottomLeft[0]), int(bottomLeft[1]))
                 topLeft = (int(topLeft[0]), int(topLeft[1]))    
-                print(markerID, topLeft, bottomRight, bottomLeft, topLeft)
 
-
-                # draw the bounding box of the ArUCo detection
-                #cv2.line(image, topLeft, topRight, (0, 255, 0), 2)
-                #cv2.line(image, topRight, bottomRight, (0, 255, 0), 2)
-                #cv2.line(image, bottomRight, bottomLeft, (0, 255, 0), 2)
-                #cv2.line(image, bottomLeft, topLeft, (0, 255, 0), 2)
                 # compute and draw the center (x, y)-coordinates of the ArUco marker
                 cX = int((topLeft[0] + bottomRight[0]) / 2.0)
                 cY = int((topLeft[1] + bottomRight[1]) / 2.0)
-                #cv2.circle(image, (cX, cY), 4, (0, 0, 255), -1)
+
+
+                print('markid=', markerID, 'center=', (cX, cY),topLeft, bottomRight, bottomLeft, topLeft)
+                # print("[INFO] ArUco marker ID: {}".format(markerID))
+
+
+                # draw the bounding box of the ArUCo detection
+                cv2.line(image, topLeft, topRight, (0, 255, 0), 2)
+                cv2.line(image, topRight, bottomRight, (0, 255, 0), 2)
+                cv2.line(image, bottomRight, bottomLeft, (0, 255, 0), 2)
+                cv2.line(image, bottomLeft, topLeft, (0, 255, 0), 2)
+
+                cv2.circle(image, (cX, cY), 4, (0, 0, 255), -1)
                 # draw the ArUco marker ID on the image
-                #cv2.putText(image, str(markerID),
-                #    (topLeft[0], topLeft[1] - 15), cv2.FONT_HERSHEY_SIMPLEX,
-                #    0.5, (0, 255, 0), 2)
+                cv2.putText(image, str(markerID),
+                   (topLeft[0], topLeft[1] - 15), cv2.FONT_HERSHEY_SIMPLEX,
+                   0.5, (0, 255, 0), 2)
 
                 # img_marker = self.draw_axis(image,0,0,0)
 
 
-                print("[INFO] ArUco marker ID: {}".format(markerID))
                 # show the output image
           
                 # rvec, tvec = cv2.aruco.estimatePoseSingleMarkers(corners, 0.05, mtx, dist) #Estimate pose of each marker and return the values rvet and tvec---different from camera coeficcients  
@@ -216,7 +220,7 @@ class WarehouseRobot():
                 # cv2.aruco.drawDetectedMarkers(image, corners) #Draw A square around the markers  
 
                 # image = cv2.aruco.drawMarker(cv2.aruco.DICT_4X4_1000,)
-                image = self.draw_axis_2(image, corners)
+                # image = self.draw_axis_2(image, corners)
                 g_mqtt.publish_cv_image('gobot_stonehouse/eye/marker', image)
                 # cv2.waitKey(0)
 
