@@ -156,7 +156,95 @@ class WarehouseRobot():
         cv2.aruco.drawDetectedMarkers(frame, corners)
         return frame
 
+    def find_corners(self, image, marker_ids):
+        '''
+        marker_ids is a list of [top_right, bottom_right, bottome_left, top_left]
+        '''
+        arucoDict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_4X4_100)
+        arucoParams = cv2.aruco.DetectorParameters_create()
+        corners, ids, rejected = cv2.aruco.detectMarkers(image, arucoDict, parameters=arucoParams)
+        # print(corners, ids, rejected)    
+        result = []
 
+        # verify *at least* one ArUco marker was detected
+        if len(corners) > 0:
+            # flatten the ArUco IDs list
+            ids = ids.flatten()
+            for target_id in marker_ids:
+                # loop over the detected ArUCo corners
+                for (markerCorner, markerID) in zip(corners, ids):
+                    if target_id == markerID:
+                        # extract the marker corners (which are always returned in
+                        # top-left, top-right, bottom-right, and bottom-left order)
+                        corners = markerCorner.reshape((4, 2))
+                        (topLeft, topRight, bottomRight, bottomLeft) = corners
+                        # convert each of the (x, y)-coordinate pairs to integers
+                        topRight = (int(topRight[0]), int(topRight[1]))
+                        bottomRight = (int(bottomRight[0]), int(bottomRight[1]))
+                        bottomLeft = (int(bottomLeft[0]), int(bottomLeft[1]))
+                        topLeft = (int(topLeft[0]), int(topLeft[1]))    
+
+                        # compute and draw the center (x, y)-coordinates of the ArUco marker
+                        cX = int((topLeft[0] + bottomRight[0]) / 2.0)
+                        cY = int((topLeft[1] + bottomRight[1]) / 2.0)
+
+                        print('markid=', markerID, 'center=', (cX, cY),topLeft, bottomRight, bottomLeft, topLeft)
+                        result.append (cX,cY)
+
+                        # print("[INFO] ArUco marker ID: {}".format(markerID))
+
+
+                        # draw the bounding box of the ArUCo detection
+                        cv2.line(image, topLeft, topRight, (0, 255, 0), 2)
+                        cv2.line(image, topRight, bottomRight, (0, 255, 0), 2)
+                        cv2.line(image, bottomRight, bottomLeft, (0, 255, 0), 2)
+                        cv2.line(image, bottomLeft, topLeft, (0, 255, 0), 2)
+
+                        cv2.circle(image, (cX, cY), 4, (0, 0, 255), -1)
+                        # draw the ArUco marker ID on the image
+                        cv2.putText(image, str(markerID),
+                        (topLeft[0], topLeft[1] - 15), cv2.FONT_HERSHEY_SIMPLEX,
+                        8, (0, 255, 0), 2)
+
+                        # img_marker = self.draw_axis(image,0,0,0)
+
+
+                        # show the output image
+                
+                        # rvec, tvec = cv2.aruco.estimatePoseSingleMarkers(corners, 0.05, mtx, dist) #Estimate pose of each marker and return the values rvet and tvec---different from camera coeficcients  
+                        # (rvec-tvec).any() # get rid of that nasty numpy value array error  
+                        
+                        # cv2.aruco.drawAxis(image, mtx, dist, rvec, tvec, 0.1) #Draw Axis  
+                        # cv2.aruco.drawAxis(image, )
+                        # cv2.aruco.drawDetectedMarkers(image, corners) #Draw A square around the markers  
+
+                        # image = cv2.aruco.drawMarker(cv2.aruco.DICT_4X4_1000,)
+                        # image = self.draw_axis_2(image, corners)
+                        g_mqtt.publish_cv_image('gobot_stonehouse/eye/marker', image)
+                        # cv2.waitKey(0)
+
+
+    def get_perspective_view(self, img, pts):
+        # specify desired output size 
+        width = 350
+        height = 350
+
+        # specify conjugate x,y coordinates (not y,x)
+        input = np.float32([[62,71], [418,59], [442,443], [29,438]])
+        output = np.float32([[0,0], [width-1,0], [width-1,height-1], [0,height-1]])
+
+        # compute perspective matrix
+        matrix = cv2.getPerspectiveTransform(input,output)
+
+        print(matrix.shape)
+        print(matrix)
+
+        # do perspective transformation setting area outside input to black
+        imgOutput = cv2.warpPerspective(img, matrix, (width,height), cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=(0,0,0))
+        print(imgOutput.shape)
+
+        # save the warped output
+        return imgOutput
 
     def spin_once(self):
         # Take a picture from camera
@@ -164,70 +252,13 @@ class WarehouseRobot():
         g_mqtt.publish_cv_image('gobot_stonehouse/eye/origin', image)
 
         # Get corners position from detecting aruco marks
-        # aruco_mark = cv2.detect_aruco(img)
-        arucoDict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_4X4_1000)
-        arucoParams = cv2.aruco.DetectorParameters_create()
-        (corners, ids, rejected) = cv2.aruco.detectMarkers(image, arucoDict, parameters=arucoParams)
-        # print(corners, ids, rejected)    
+        corners = self.find_corners(image,[1,2,3,4])
+        print(corners)
 
-        # verify *at least* one ArUco marker was detected
-        if len(corners) > 0:
-            # flatten the ArUco IDs list
-            ids = ids.flatten()
-            # loop over the detected ArUCo corners
-            for (markerCorner, markerID) in zip(corners, ids):
-                # extract the marker corners (which are always returned in
-                # top-left, top-right, bottom-right, and bottom-left order)
-                corners = markerCorner.reshape((4, 2))
-                (topLeft, topRight, bottomRight, bottomLeft) = corners
-                # convert each of the (x, y)-coordinate pairs to integers
-                topRight = (int(topRight[0]), int(topRight[1]))
-                bottomRight = (int(bottomRight[0]), int(bottomRight[1]))
-                bottomLeft = (int(bottomLeft[0]), int(bottomLeft[1]))
-                topLeft = (int(topLeft[0]), int(topLeft[1]))    
-
-                # compute and draw the center (x, y)-coordinates of the ArUco marker
-                cX = int((topLeft[0] + bottomRight[0]) / 2.0)
-                cY = int((topLeft[1] + bottomRight[1]) / 2.0)
-
-
-                print('markid=', markerID, 'center=', (cX, cY),topLeft, bottomRight, bottomLeft, topLeft)
-                # print("[INFO] ArUco marker ID: {}".format(markerID))
-
-
-                # draw the bounding box of the ArUCo detection
-                cv2.line(image, topLeft, topRight, (0, 255, 0), 2)
-                cv2.line(image, topRight, bottomRight, (0, 255, 0), 2)
-                cv2.line(image, bottomRight, bottomLeft, (0, 255, 0), 2)
-                cv2.line(image, bottomLeft, topLeft, (0, 255, 0), 2)
-
-                cv2.circle(image, (cX, cY), 4, (0, 0, 255), -1)
-                # draw the ArUco marker ID on the image
-                cv2.putText(image, str(markerID),
-                   (topLeft[0], topLeft[1] - 15), cv2.FONT_HERSHEY_SIMPLEX,
-                   0.5, (0, 255, 0), 2)
-
-                # img_marker = self.draw_axis(image,0,0,0)
-
-
-                # show the output image
-          
-                # rvec, tvec = cv2.aruco.estimatePoseSingleMarkers(corners, 0.05, mtx, dist) #Estimate pose of each marker and return the values rvet and tvec---different from camera coeficcients  
-                # (rvec-tvec).any() # get rid of that nasty numpy value array error  
-                
-                # cv2.aruco.drawAxis(image, mtx, dist, rvec, tvec, 0.1) #Draw Axis  
-                # cv2.aruco.drawAxis(image, )
-                # cv2.aruco.drawDetectedMarkers(image, corners) #Draw A square around the markers  
-
-                # image = cv2.aruco.drawMarker(cv2.aruco.DICT_4X4_1000,)
-                # image = self.draw_axis_2(image, corners)
-                g_mqtt.publish_cv_image('gobot_stonehouse/eye/marker', image)
-                # cv2.waitKey(0)
-
-
-
-        # Get perspective views the plane
-        #perspective_img = cv2.get_perspective_image(img, aruco_mark)
+        if len(corners == 4):
+            # Get perspectived image
+            perspect_img = self.get_perspective_view(image,corners)
+            g_mqtt.publish_cv_image('gobot_stonehouse/eye/ready', perspect_img)
         
         # Get the stone position, will store the position to where? 
         #x, y = get_stone_pistion(perspective_img, BLACK) 
