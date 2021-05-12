@@ -165,19 +165,21 @@ class WarehouseRobot():
         corners, ids, rejected = cv2.aruco.detectMarkers(image, arucoDict, parameters=arucoParams)
         # print(corners, ids, rejected)    
         result = []
-
+        print('double check',marker_ids)
         # verify *at least* one ArUco marker was detected
         if len(corners) > 0:
             # flatten the ArUco IDs list
             ids = ids.flatten()
             for target_id in marker_ids:
+                print('----------------Searching.... ', target_id)
                 # loop over the detected ArUCo corners
                 for (markerCorner, markerID) in zip(corners, ids):
                     if target_id == markerID:
+                        print('got matched id', target_id)
                         # extract the marker corners (which are always returned in
                         # top-left, top-right, bottom-right, and bottom-left order)
-                        corners = markerCorner.reshape((4, 2))
-                        (topLeft, topRight, bottomRight, bottomLeft) = corners
+                        corners2 = markerCorner.reshape((4, 2))
+                        topLeft, topRight, bottomRight, bottomLeft = corners2
                         # convert each of the (x, y)-coordinate pairs to integers
                         topRight = (int(topRight[0]), int(topRight[1]))
                         bottomRight = (int(bottomRight[0]), int(bottomRight[1]))
@@ -189,7 +191,7 @@ class WarehouseRobot():
                         cY = int((topLeft[1] + bottomRight[1]) / 2.0)
 
                         print('markid=', markerID, 'center=', (cX, cY),topLeft, bottomRight, bottomLeft, topLeft)
-                        result.append (cX,cY)
+                        result.append ((cX,cY))
 
                         # print("[INFO] ArUco marker ID: {}".format(markerID))
 
@@ -222,7 +224,7 @@ class WarehouseRobot():
                         # image = self.draw_axis_2(image, corners)
                         g_mqtt.publish_cv_image('gobot_stonehouse/eye/marker', image)
                         # cv2.waitKey(0)
-
+        return result
 
     def get_perspective_view(self, img, pts):
         # specify desired output size 
@@ -254,11 +256,11 @@ class WarehouseRobot():
         # Get corners position from detecting aruco marks
         corners = self.find_corners(image,[1,2,3,4])
         print(corners)
-
-        if len(corners == 4):
-            # Get perspectived image
-            perspect_img = self.get_perspective_view(image,corners)
-            g_mqtt.publish_cv_image('gobot_stonehouse/eye/ready', perspect_img)
+        if corners != None:
+            if len(corners) == 4:
+                # Get perspectived image
+                perspect_img = self.get_perspective_view(image,corners)
+                g_mqtt.publish_cv_image('gobot_stonehouse/eye/ready', perspect_img)
         
         # Get the stone position, will store the position to where? 
         #x, y = get_stone_pistion(perspective_img, BLACK) 
@@ -282,5 +284,5 @@ if __name__ == '__main__':
     myrobot = WarehouseRobot()
     while True:
         myrobot.spin_once()
-        time.sleep(1)
+        time.sleep(0.01)
         print('spin_once done...')
