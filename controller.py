@@ -4,7 +4,7 @@ import cv2
 # load the input image and display it to our screen
 print("click on the image and press any key to continue...")
 image = cv2.imread("hoover_dam.jpg")
-cv2.imshow("Image", image)
+# cv2.imshow("Image", image)
 cv2.waitKey(0)
 print("moving on...")
 # set the GPIO mode
@@ -18,4 +18,4 @@ for i in (22, 23, 24):
 	GPIO.output(i, GPIO.LOW)
 # perform a bit of cleanup
 GPIO.cleanup()
-
+print('end')
