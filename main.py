@@ -1,12 +1,17 @@
 
-from typing_extensions import runtime_checkable
+# from typing_extensions import runtime_checkable
 import cv2
-import numpy as np
-import threading
+# import numpy as np
+# import threading
+from picamera.array import PiRGBArray
+from picamera import PiCamera
+import time
 
+import sys
+# sys.path.append("~/pylib")
+sys.path.append("../pylib")
 from terminal_font import TerminalFont
-
-
+from mqtt_helper import g_mqtt
 
 class CvWindows():
     def __init__(self):
@@ -41,23 +46,35 @@ class CvWindows():
 class WarehouseRobot():
 
     def __init__(self):
-        self.__mark_scanner = MarkScanner()
-        self.__board_scanner = BoardScanner()
-        self.__layout_scanner = LayoutScanner()
-        self.__capture_device = cv2.VideoCapture(app.robot_eye.camera_index)
+        pass
+        # self.__mark_scanner = MarkScanner()
+        # self.__board_scanner = BoardScanner()
+        # self.__layout_scanner = LayoutScanner()
+        # self.__capture_device = cv2.VideoCapture(app.robot_eye.camera_index)
 
-        self.windows={'original':'original','candy':'candy','chessboard':'chessboard'}
-        self.__cvWindow = CvWindows()
-        self.__thread_eyes = {}
+        # self.windows={'original':'original','candy':'candy','chessboard':'chessboard'}
+        # self.__cvWindow = CvWindows()
+        # self.__thread_eyes = {}
 
-        self.__target_x_position = 100
-        self.__target_y_position = 30
+        # self.__target_x_position = 100
+        # self.__target_y_position = 30
 
-        self.__FC_YELLOW = TerminalFont.Color.Fore.yellow
-        self.__FC_RESET = TerminalFont.Color.Control.reset
-        self.__MARK_STABLE_DEPTH = config.robot_eye.mark_scanner.stable_depth
-        self.__LAYOUT_STABLE_DEPTH = config.robot_eye.layout_scanner.stable_depth
+        # self.__FC_YELLOW = TerminalFont.Color.Fore.yellow
+        # self.__FC_RESET = TerminalFont.Color.Control.reset
+        # self.__MARK_STABLE_DEPTH = config.robot_eye.mark_scanner.stable_depth
+        # self.__LAYOUT_STABLE_DEPTH = config.robot_eye.layout_scanner.stable_depth
 
+    def take_picture(self):
+        # initialize the camera and grab a reference to the raw camera capture
+        camera = PiCamera()
+        rawCapture = PiRGBArray(camera)
+        # allow the camera to warmup
+        time.sleep(0.1)
+        # grab an image from the camera
+        camera.capture(rawCapture, format="bgr")
+        image = rawCapture.array
+        # display the image on screen and wait for a keypress
+        return image
 
     def move_stone(self, relative_x, relative_y):
         x_dir = HIGH
@@ -87,11 +104,12 @@ class WarehouseRobot():
             set_gpio(y_step_pin, LOW)
             delay_us(100)
 
-            
-
     def spin_once(self):
         # Take a picture from camera
-        img = cv2.take_picture()
+        img = self.take_picture()
+        g_mqtt.publish_cv_image('gobot_stonehouse/eye/origin', img)
+
+        time.sleep(5)
         
         # Get corners position from detecting aruco marks
         aruco_mark = cv2.detect_aruco(img)
@@ -114,6 +132,10 @@ class WarehouseRobot():
 if __name__ == '__main__':
     # How can show two video window,  from one threads?
     # myrobotEye.start_show('candy')
+    g_mqtt.connect_to_broker('123456', 'voicevon.vicp.io', 1883, 'von','von1970')
+    
+    # put this line to anywhere.
+
     myrobot = WarehouseRobot()
     while True:
         myrotot.spin_once()
