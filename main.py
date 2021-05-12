@@ -69,7 +69,7 @@ class WarehouseRobot():
 
     def take_picture(self):
         rawCapture = PiRGBArray(self.__camera)
-        time.sleep(1)
+        # time.sleep(1)
         # grab an image from the camera
         self.__camera.capture(rawCapture, format="bgr")
         image = rawCapture.array
@@ -195,18 +195,18 @@ class WarehouseRobot():
 
                         # print("[INFO] ArUco marker ID: {}".format(markerID))
 
+                        if False:
+                            # draw the bounding box of the ArUCo detection
+                            cv2.line(image, topLeft, topRight, (0, 255, 0), 2)
+                            cv2.line(image, topRight, bottomRight, (0, 255, 0), 2)
+                            cv2.line(image, bottomRight, bottomLeft, (0, 255, 0), 2)
+                            cv2.line(image, bottomLeft, topLeft, (0, 255, 0), 2)
 
-                        # draw the bounding box of the ArUCo detection
-                        cv2.line(image, topLeft, topRight, (0, 255, 0), 2)
-                        cv2.line(image, topRight, bottomRight, (0, 255, 0), 2)
-                        cv2.line(image, bottomRight, bottomLeft, (0, 255, 0), 2)
-                        cv2.line(image, bottomLeft, topLeft, (0, 255, 0), 2)
-
-                        cv2.circle(image, (cX, cY), 4, (0, 0, 255), -1)
-                        # draw the ArUco marker ID on the image
-                        cv2.putText(image, str(markerID),
-                        (topLeft[0], topLeft[1] - 15), cv2.FONT_HERSHEY_SIMPLEX,
-                        8, (0, 255, 0), 2)
+                            cv2.circle(image, (cX, cY), 4, (0, 0, 255), -1)
+                            # draw the ArUco marker ID on the image
+                            cv2.putText(image, str(markerID),
+                                        (topLeft[0], topLeft[1] - 15), cv2.FONT_HERSHEY_SIMPLEX,
+                                        8, (0, 255, 0), 2)
 
                         # img_marker = self.draw_axis(image,0,0,0)
 
@@ -222,7 +222,7 @@ class WarehouseRobot():
 
                         # image = cv2.aruco.drawMarker(cv2.aruco.DICT_4X4_1000,)
                         # image = self.draw_axis_2(image, corners)
-                        g_mqtt.publish_cv_image('gobot_stonehouse/eye/marker', image)
+                            g_mqtt.publish_cv_image('gobot_stonehouse/eye/marker', image)
                         # cv2.waitKey(0)
         return result
 
