@@ -5,6 +5,7 @@ import time
 
 class Controller():
 	def __init__(self):
+		GPIO.cleanup()
 		GPIO.setmode(GPIO.BCM)
 		self.__x_dir_pin = 22
 		self.__x_step_pin =22
