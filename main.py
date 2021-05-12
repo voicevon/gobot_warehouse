@@ -163,7 +163,6 @@ class WarehouseRobot():
         arucoDict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_4X4_100)
         arucoParams = cv2.aruco.DetectorParameters_create()
         corners, ids, rejected = cv2.aruco.detectMarkers(image, arucoDict, parameters=arucoParams)
-        # print(corners, ids, rejected)    
         result = []
         print('double check',marker_ids)
         # verify *at least* one ArUco marker was detected
@@ -191,11 +190,11 @@ class WarehouseRobot():
                         cY = int((topLeft[1] + bottomRight[1]) / 2.0)
 
                         print('markid=', markerID, 'center=', (cX, cY),topLeft, bottomRight, bottomLeft, topLeft)
-                        result.append ((cX,cY))
+                        result.append ([cX,cY])
 
                         # print("[INFO] ArUco marker ID: {}".format(markerID))
 
-                        if False:
+                        if True:
                             # draw the bounding box of the ArUCo detection
                             cv2.line(image, topLeft, topRight, (0, 255, 0), 2)
                             cv2.line(image, topRight, bottomRight, (0, 255, 0), 2)
@@ -208,22 +207,21 @@ class WarehouseRobot():
                                         (topLeft[0], topLeft[1] - 15), cv2.FONT_HERSHEY_SIMPLEX,
                                         8, (0, 255, 0), 2)
 
-                        # img_marker = self.draw_axis(image,0,0,0)
+                            # img_marker = self.draw_axis(image,0,0,0)
 
 
-                        # show the output image
-                
-                        # rvec, tvec = cv2.aruco.estimatePoseSingleMarkers(corners, 0.05, mtx, dist) #Estimate pose of each marker and return the values rvet and tvec---different from camera coeficcients  
-                        # (rvec-tvec).any() # get rid of that nasty numpy value array error  
-                        
-                        # cv2.aruco.drawAxis(image, mtx, dist, rvec, tvec, 0.1) #Draw Axis  
-                        # cv2.aruco.drawAxis(image, )
-                        # cv2.aruco.drawDetectedMarkers(image, corners) #Draw A square around the markers  
+                            # show the output image
+                    
+                            # rvec, tvec = cv2.aruco.estimatePoseSingleMarkers(corners, 0.05, mtx, dist) #Estimate pose of each marker and return the values rvet and tvec---different from camera coeficcients  
+                            # (rvec-tvec).any() # get rid of that nasty numpy value array error  
+                            
+                            # cv2.aruco.drawAxis(image, mtx, dist, rvec, tvec, 0.1) #Draw Axis  
+                            # cv2.aruco.drawAxis(image, )
+                            # cv2.aruco.drawDetectedMarkers(image, corners) #Draw A square around the markers  
 
-                        # image = cv2.aruco.drawMarker(cv2.aruco.DICT_4X4_1000,)
-                        # image = self.draw_axis_2(image, corners)
+                            # image = cv2.aruco.drawMarker(cv2.aruco.DICT_4X4_1000,)
+                            # image = self.draw_axis_2(image, corners)
                             g_mqtt.publish_cv_image('gobot_stonehouse/eye/marker', image)
-                        # cv2.waitKey(0)
         return result
 
     def get_perspective_view(self, img, pts):
@@ -232,7 +230,8 @@ class WarehouseRobot():
         height = 350
 
         # specify conjugate x,y coordinates (not y,x)
-        input = np.float32([[62,71], [418,59], [442,443], [29,438]])
+        # input = np.float32([[62,71], [418,59], [442,443], [29,438]])
+        input = np.float32(pts)
         output = np.float32([[0,0], [width-1,0], [width-1,height-1], [0,height-1]])
 
         # compute perspective matrix
@@ -260,7 +259,7 @@ class WarehouseRobot():
             if len(corners) == 4:
                 # Get perspectived image
                 perspect_img = self.get_perspective_view(image,corners)
-                g_mqtt.publish_cv_image('gobot_stonehouse/eye/ready', perspect_img)
+                g_mqtt.publish_cv_image('gobot_stonehouse/eye/perspect', perspect_img)
         
         # Get the stone position, will store the position to where? 
         #x, y = get_stone_pistion(perspective_img, BLACK) 
