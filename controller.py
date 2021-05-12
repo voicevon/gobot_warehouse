@@ -46,12 +46,13 @@ class Controller():
 			GPIO.output:(self.__x_step_pin, y_dir)
 			GPIO.output(self.__y_step_pin, y_dir)
 			time.sleep(0.2)
+			print('step into ', i)
 		
 
 if __name__ == '__main__':
 
 	testor = Controller()
-	testor.move_stone(1,2)
+	testor.move_stone(100,20)
 
 
 # set the GPIO mode
