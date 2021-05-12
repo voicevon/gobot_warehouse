@@ -49,6 +49,7 @@ class WarehouseRobot():
     def __init__(self):
         # initialize the camera and grab a reference to the raw camera capture
         self.__camera = PiCamera()
+
         # self.__mark_scanner = MarkScanner()
         # self.__board_scanner = BoardScanner()
         # self.__layout_scanner = LayoutScanner()
@@ -74,7 +75,7 @@ class WarehouseRobot():
         image = rawCapture.array
         return image
 
-    def move_stone(sedfsdffsfdsgf, relative_x, relative_y):
+    def move_stone(self, relative_x, relative_y):
         x_dir = HIGH
         if relative_x < 0:
             x_dir = LOW
@@ -103,7 +104,7 @@ class WarehouseRobot():
             delay_us(100)
 
 
-    def draw_axis(img, yaw, pitch, roll, tdx=None, tdy=None, size = 100):
+    def draw_axis(self,img, yaw, pitch, roll, tdx=None, tdy=None, size = 100):
 
         pitch = pitch * np.pi / 180
         yaw = -(yaw * np.pi / 180)
@@ -135,6 +136,27 @@ class WarehouseRobot():
         cv2.line(img, (int(tdx), int(tdy)), (int(x3),int(y3)),(255,0,0),2)
 
         return img 
+
+
+    def draw_axis_2(self, frame, corners):
+        dist=np.array(([[-0.58650416 , 0.59103816, -0.00443272 , 0.00357844 ,-0.27203275]]))
+        newcameramtx=np.array([[189.076828   ,  0.    ,     361.20126638]
+                            ,[  0 ,2.01627296e+04 ,4.52759577e+02]
+                            ,[0, 0, 1]])
+        mtx=np.array([[398.12724231  , 0.      ,   304.35638757],
+                        [  0.       ,  345.38259888, 282.49861858],
+                        [  0.,           0.,           1.        ]])
+
+        rvec, tvec, _ = cv2.aruco.estimatePoseSingleMarkers(corners, 0.05, mtx, dist)
+        # 估计每个标记的姿态并返回值rvet和tvec ---不同
+        # from camera coeficcients
+        (rvec-tvec).any() # get rid of that nasty numpy value array error
+        i = 0
+        cv2.aruco.drawAxis(frame, mtx, dist, rvec[i, :, :], tvec[i, :, :], 0.03)
+        cv2.aruco.drawDetectedMarkers(frame, corners)
+        return frame
+
+
 
     def spin_once(self):
         # Take a picture from camera
@@ -180,12 +202,26 @@ class WarehouseRobot():
                 #    (topLeft[0], topLeft[1] - 15), cv2.FONT_HERSHEY_SIMPLEX,
                 #    0.5, (0, 255, 0), 2)
 
-                img_marker = self.draw_axis(image,0,0,0)
+                # img_marker = self.draw_axis(image,0,0,0)
+
+
                 print("[INFO] ArUco marker ID: {}".format(markerID))
                 # show the output image
-                g_mqtt.publish_cv_image('gobot_stonehouse/eye/marker', img_marker)
-                # cv2.imshow("Image", image)
-                cv2.waitKey(0)
+          
+                # rvec, tvec = cv2.aruco.estimatePoseSingleMarkers(corners, 0.05, mtx, dist) #Estimate pose of each marker and return the values rvet and tvec---different from camera coeficcients  
+                # (rvec-tvec).any() # get rid of that nasty numpy value array error  
+                
+                # cv2.aruco.drawAxis(image, mtx, dist, rvec, tvec, 0.1) #Draw Axis  
+                # cv2.aruco.drawAxis(image, )
+                # cv2.aruco.drawDetectedMarkers(image, corners) #Draw A square around the markers  
+
+                # image = cv2.aruco.drawMarker(cv2.aruco.DICT_4X4_1000,)
+                image = self.draw_axis_2(image, corners)
+                g_mqtt.publish_cv_image('gobot_stonehouse/eye/marker', image)
+                # cv2.waitKey(0)
+
+
+
         # Get perspective views the plane
         #perspective_img = cv2.get_perspective_image(img, aruco_mark)
         
