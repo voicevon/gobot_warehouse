@@ -253,7 +253,8 @@ class WarehouseRobot():
         g_mqtt.publish_cv_image('gobot_stonehouse/eye/origin', image)
 
         # Get corners position from detecting aruco marks
-        corners = self.find_corners(image,[1,2,3,4])
+        # The sequerence is always [TopLeft, TopRight,bottomRight,BottomLeft]
+        corners = self.find_corners(image,[1,2,4,3])
         print(corners)
         if corners != None:
             if len(corners) == 4:
