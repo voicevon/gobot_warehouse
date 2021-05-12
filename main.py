@@ -46,6 +46,7 @@ class CvWindows():
 class WarehouseRobot():
 
     def __init__(self):
+        # initialize the camera and grab a reference to the raw camera capture
         self.__camera = PiCamera()
         # self.__mark_scanner = MarkScanner()
         # self.__board_scanner = BoardScanner()
@@ -65,19 +66,11 @@ class WarehouseRobot():
         # self.__LAYOUT_STABLE_DEPTH = config.robot_eye.layout_scanner.stable_depth
 
     def take_picture(self):
-        # initialize the camera and grab a reference to the raw camera capture
-        # camera = PiCamera()
-        # camera.stop_preview()
-        #rawCapture = PiRGBArray(camera,size=(640,480))
         rawCapture = PiRGBArray(self.__camera)
-        # camera.stop_preview()
-        # allow the camera to warmup
         time.sleep(1)
         # grab an image from the camera
         self.__camera.capture(rawCapture, format="bgr")
         image = rawCapture.array
-        #camera.close()
-        # display the image on screen and wait for a keypress
         return image
 
     def move_stone(sedfsdffsfdsgf, relative_x, relative_y):
@@ -113,11 +106,12 @@ class WarehouseRobot():
         img = self.take_picture()
         g_mqtt.publish_cv_image('gobot_stonehouse/eye/origin', img)
 
-        #time.sleep(2)
-        
         # Get corners position from detecting aruco marks
         # aruco_mark = cv2.detect_aruco(img)
-
+        arucoDict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_4X4_50)
+        arucoParams = cv2.aruco.DetectorParameters_create()
+        (corners, ids, rejected) = cv2.aruco.detectMarkers(img, arucoDict, parameters=arucoParams)
+        
         # Get perspective views the plane
         #perspective_img = cv2.get_perspective_image(img, aruco_mark)
         
