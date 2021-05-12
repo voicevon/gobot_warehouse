@@ -75,33 +75,7 @@ class WarehouseRobot():
         image = rawCapture.array
         return image
 
-    def move_stone(self, relative_x, relative_y):
-        x_dir = HIGH
-        if relative_x < 0:
-            x_dir = LOW
-            relative_x = - relative_x
-        set_gpio(x_dir_pin, x_dir)
-
-        y_dir = HIGH
-        if relative_y < 0:
-            y_dir = LOW
-            relative_y = - relative_y
-        set_gpio(y_dir_pin,y_dir)
-
-
-        max_step = max(relative_x,relative_y)
-        for i in range(0,max_step):
-            # send a step pluse
-            if relative_x > 0:
-                set_gpio(x_step_pin, HIGH)
-                relative_x -= 1
-            if relative_y > 0:
-                set_gpio(y_step_pin, HIGH)
-                relative_y -= 1
-            delay_us(100)
-            set_gpio(x_step_pin, LOW)
-            set_gpio(y_step_pin, LOW)
-            delay_us(100)
+ 
 
 
     def draw_axis(self,img, yaw, pitch, roll, tdx=None, tdy=None, size = 100):
